@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Background circle representing unity and community -->
+  <circle cx="32" cy="32" r="30" fill="#1e3a8a"/>
+  
+  <!-- Outer ring in gold representing divine light -->
+  <circle cx="32" cy="32" r="28" fill="none" stroke="#d4a017" stroke-width="2"/>
+  
+  <!-- Cross - symbol of faith and sacrifice -->
+  <!-- Vertical bar -->
+  <rect x="28" y="16" width="8" height="32" rx="2" fill="#d4a017"/>
+  <!-- Horizontal bar -->
+  <rect x="16" y="28" width="32" height="8" rx="2" fill="#d4a017"/>
+  
+  <!-- Inner circle representing community unity -->
+  <circle cx="32" cy="32" r="12" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.4"/>
+</svg>

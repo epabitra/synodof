@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirecting...</title>
+    <script>
+      // GitHub Pages SPA routing fix - Simple redirect to index.html
+      (function() {
+        var path = window.location.pathname;
+        var basePath = '/journalist-portfolio';
+        var search = window.location.search;
+        var hash = window.location.hash;
+        
+        // Extract the actual route from the path
+        var actualPath = path;
+        
+        // Remove base path
+        if (actualPath.startsWith(basePath)) {
+          actualPath = actualPath.substring(basePath.length);
+        }
+        
+        // Remove any /index.html from the path
+        actualPath = actualPath.replace(/\/index\.html/g, '');
+        
+        // Ensure path starts with /
+        if (!actualPath || actualPath === '') {
+          actualPath = '/';
+        }
+        if (!actualPath.startsWith('/')) {
+          actualPath = '/' + actualPath;
+        }
+        
+        // Store the original path in sessionStorage before redirecting
+        if (actualPath !== '/' && actualPath !== '/index.html') {
+          sessionStorage.setItem('githubPagesRedirect', actualPath);
+        }
+        
+        // Simple redirect to index.html (without appending path to avoid loop)
+        var redirectUrl = basePath + '/index.html' + search + (hash || '');
+        
+        // Only redirect if we're not already on index.html
+        if (!path.includes('/index.html') || path !== basePath + '/index.html') {
+          window.location.replace(redirectUrl);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <p>Redirecting...</p>
+    <noscript>
+      <p>Please enable JavaScript to view this site.</p>
+      <p><a href="/journalist-portfolio/">Click here to go to the home page</a></p>
+    </noscript>
+  </body>
+</html>

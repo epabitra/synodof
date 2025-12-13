@@ -1,0 +1,209 @@
+/**
+ * Professional Portfolio Page with Realistic Content
+ * Showcase of featured stories and highlights
+ */
+
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+import { publicAPI } from '@/services/api';
+import { formatDate } from '@/utils/dateFormatter';
+import { ROUTES } from '@/config/constants';
+import Loading from '@/components/Loading';
+import { ENV } from '@/config/env';
+
+const Portfolio = () => {
+  const [posts, setPosts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const [postsData, categoriesData] = await Promise.all([
+        publicAPI.listPosts({
+          featured: 'true',
+          status: 'published',
+          limit: 50,
+        }).catch(() => null),
+        publicAPI.getCategories().catch(() => null),
+      ]);
+
+      // Filter posts by type: show only 'programs' or 'both' type posts
+      if (postsData?.success && postsData.data?.length > 0) {
+        postsData.data = postsData.data.filter(post => 
+          post.type === 'programs' || post.type === 'both'
+        );
+      }
+
+      if (postsData?.success && postsData.data?.length > 0) {
+        setPosts(postsData.data);
+      } else {
+        setPosts([]);
+      }
+
+      if (categoriesData?.success && categoriesData.data?.length > 0) {
+        setCategories(categoriesData.data);
+      } else {
+        setCategories([]);
+      }
+    } catch (err) {
+      console.error('Error loading portfolio:', err);
+      setError(err.message || 'Failed to load portfolio');
+      setPosts([]);
+      setCategories([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredPosts = selectedCategory
+    ? posts.filter(post => post.category?.toLowerCase() === selectedCategory.toLowerCase())
+    : posts;
+
+  const displayPosts = filteredPosts;
+  const displayCategories = categories;
+
+  if (loading) {
+    return <Loading fullScreen message="Loading portfolio..." />;
+  }
+
+  return (
+    <>
+      <Helmet>
+        <title>Programs | {ENV.SITE_NAME}</title>
+        <meta name="description" content="Explore our community programs, initiatives, and projects that make a difference" />
+      </Helmet>
+
+      <div className="portfolio-page">
+        <div className="section">
+          <div className="container">
+            <div className="section-header text-center" style={{ marginBottom: 'var(--space-12)' }}>
+              <h1>Our Programs</h1>
+              <p style={{
+                color: 'var(--text-secondary)',
+                maxWidth: '700px',
+                margin: 'var(--space-4) auto 0',
+                fontSize: 'var(--text-lg)'
+              }}>
+                Explore our various programs and initiatives designed to serve the community through education, healthcare, youth development, and spiritual growth.
+              </p>
+            </div>
+
+            {/* Category Filter */}
+            {displayCategories.length > 0 && (
+              <div className="category-filter" style={{ marginBottom: 'var(--space-12)' }}>
+                <button
+                  onClick={() => setSelectedCategory('')}
+                  className={!selectedCategory ? 'active' : ''}
+                >
+                  All Programs
+                </button>
+                {displayCategories
+                  .filter(cat => cat.is_active !== false)
+                  .map((category) => (
+                    <button
+                      key={category.id || category.slug}
+                      onClick={() => setSelectedCategory(category.name)}
+                      className={selectedCategory === category.name ? 'active' : ''}
+                    >
+                      {category.icon && <span style={{ marginRight: '4px' }}>{category.icon}</span>}
+                      {category.name}
+                    </button>
+                  ))}
+              </div>
+            )}
+
+            {/* Portfolio Grid */}
+            {error ? (
+              <div className="error-container">
+                <div className="error-message">
+                  <p>{error}</p>
+                </div>
+                <button className="btn btn-primary" onClick={loadData}>
+                  Try Again
+                </button>
+              </div>
+            ) : displayPosts && displayPosts.length > 0 ? (
+              <div className="posts-grid">
+                {displayPosts.map((post) => (
+                  <article key={post.id} className="post-card">
+                    {post.cover_image_url && (
+                      <div className="post-image">
+                        <Link to={`${ROUTES.BLOG}/${post.slug}`}>
+                          <img src={post.cover_image_url} alt={post.title} loading="lazy" />
+                        </Link>
+                      </div>
+                    )}
+                    <div className="post-content">
+                      <div className="post-meta mt-4">
+                        <time dateTime={post.published_at}>
+                          {formatDate(post.published_at)}
+                        </time>
+                        {post.category && (
+                          <span className="post-category">{post.category}</span>
+                        )}
+                      </div>
+                      <h2>
+                        <Link to={`${ROUTES.BLOG}/${post.slug}`}>{post.title}</Link>
+                      </h2>
+                      {post.subtitle && (
+                        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginBottom: 'var(--space-2)', fontStyle: 'italic' }}>
+                          {post.subtitle}
+                        </p>
+                      )}
+                      {post.excerpt && (
+                        <p className="post-excerpt">{post.excerpt}</p>
+                      )}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: 'var(--space-4)' }}>
+                        {post.read_time_minutes && (
+                          <span className="read-time">{post.read_time_minutes} min read</span>
+                        )}
+                        {post.view_count && (
+                          <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>
+                            👁️ {post.view_count.toLocaleString()} views
+                          </span>
+                        )}
+                      </div>
+                      <Link to={`${ROUTES.BLOG}/${post.slug}`} className="read-more">
+                        Learn More →
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center" style={{ padding: 'var(--space-12)' }}>
+                <p style={{ fontSize: 'var(--text-lg)', color: 'var(--text-secondary)' }}>
+                  {selectedCategory 
+                    ? `No programs found in ${selectedCategory}.`
+                    : 'No programs available yet. Check back soon for updates!'
+                  }
+                </p>
+                {selectedCategory && (
+                  <button
+                    onClick={() => setSelectedCategory('')}
+                    className="btn btn-primary"
+                    style={{ marginTop: 'var(--space-4)' }}
+                  >
+                    View All Programs
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default Portfolio;

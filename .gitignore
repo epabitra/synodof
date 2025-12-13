@@ -1,0 +1,162 @@
+# Dependencies
+node_modules
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+test-*.html
+test-*.js
+*.test.js
+*.test.jsx
+*.spec.js
+*.spec.jsx
+
+# Production / Build
+/dist
+/build
+*.map
+# Keep 404.html in root for GitHub Pages (will be copied from public/)
+!404.html
+
+# Misc
+.DS_Store
+
+# Environment variables and security files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+*.env
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+*.jks
+credentials.json
+service-account.json
+firebase-adminsdk*.json
+google-services.json
+GoogleService-Info.plist
+secrets.json
+config.json
+*.secret
+*.private
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+logs/
+*.log.*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+
+# Vite
+.vite
+.vite-cache
+
+# OS
+Thumbs.db
+.DS_Store
+*.swp
+*.swo
+*~
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Documentation files - ALL markdown files
+*.md
+README.md
+README*.md
+*.MD
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE.md
+NOTES.md
+
+# Setup and Helper Scripts
+GOOGLE_APPS_SCRIPT_CORS_FIX.js
+*_FIX.js
+*_SETUP.js
+setup-*.js
+helper-*.js
+test-*.html
+
+# Temporary files
+*.tmp
+*.temp
+.cache
+.temp
+*.cache
+.tmp/
+temp/
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebaserc.local
+
+# API Keys and Credentials
+api-keys.json
+credentials/
+*.credentials
+firebase-config.json
+
+# Backup files
+*.bak
+*.backup
+*~
+*.orig
+
+# Package manager locks (keep these for consistency)
+# Uncomment if you want to ignore lock files
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# IDE and Editor
+.idea/
+.vscode/
+*.code-workspace
+*.sublime-*
+
+# Coverage and Testing
+coverage/
+.nyc_output/
+*.lcov
+
+# Misc development files
+*.local
+*.local.*
+.cache/
+.npm/
+.eslintcache
+.stylelintcache
+

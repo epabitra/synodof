@@ -5,18 +5,19 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { adminAPI } from '@/services/api';
 import { firebaseStorageService } from '@/services/firebaseStorage';
 import { ROUTES, POST_STATUS, POST_TYPE, MEDIA_TYPE } from '@/config/constants';
 import { validatePostData } from '@/utils/validation';
 import { generateSlug } from '@/utils/slugGenerator';
 import { getCurrentISO, isoToLocalDateTime, getCurrentLocalDateTime, localDateTimeToISO } from '@/utils/dateFormatter';
-import { sanitizeInput } from '@/utils/sanitize';
+import { sanitizeInput, sanitizeHtml } from '@/utils/sanitize';
 import { isValidYouTubeUrl, getYouTubeEmbedUrl } from '@/utils/youtube';
 import { toast } from 'react-toastify';
 import Loading from '@/components/Loading';
 import { Helmet } from 'react-helmet-async';
+import RichTextEditor from '@/components/RichTextEditor';
 
 const AdminPostEditor = () => {
   const { id } = useParams();
@@ -40,6 +41,7 @@ const AdminPostEditor = () => {
     watch,
     setValue,
     reset,
+    control,
   } = useForm({
     defaultValues: {
       title: '',
@@ -234,6 +236,41 @@ const AdminPostEditor = () => {
     }
   };
 
+  // Handle image upload for rich text editor
+  const handleEditorImageUpload = async (file) => {
+    try {
+      let url;
+      
+      // Check if Firebase is configured, otherwise fallback to API
+      if (firebaseStorageService.isConfigured()) {
+        // Use Firebase Storage
+        url = await firebaseStorageService.uploadImage(file, {
+          folder: 'images',
+          onProgress: (progress) => {
+            // Silent progress for editor images
+          },
+        });
+      } else {
+        // Fallback to API upload
+        const result = await adminAPI.uploadMedia(file, (progress) => {
+          // Silent progress for editor images
+        });
+
+        if (result.success && result.data) {
+          url = result.data.url || result.data.public_url;
+        } else {
+          throw new Error('File upload failed');
+        }
+      }
+
+      return url;
+    } catch (err) {
+      console.error('Editor image upload error:', err);
+      toast.error(err.message || 'Failed to upload image');
+      throw err;
+    }
+  };
+
   const handleFileUpload = async (file, type) => {
     try {
       setUploading(true);
@@ -297,8 +334,14 @@ const AdminPostEditor = () => {
     try {
       setSaving(true);
 
-      // Sanitize input
+      // Preserve content field before sanitization (it contains HTML from RichTextEditor)
+      const contentValue = data.content || '';
+      
+      // Sanitize input (but preserve content for later sanitization with DOMPurify)
       const sanitizedData = sanitizeInput(data);
+      
+      // Sanitize content separately using DOMPurify (preserves HTML but removes XSS)
+      sanitizedData.content = sanitizeHtml(contentValue);
 
       // Handle tags - convert to array and limit to 10 items BEFORE validation
       let tagsArray = [];
@@ -459,13 +502,25 @@ const AdminPostEditor = () => {
             <div className="card-body">
               <div className="form-group">
                 <label htmlFor="content">Content *</label>
-                <textarea
-                  id="content"
-                  rows="15"
-                  {...register('content', { required: 'Content is required' })}
-                  placeholder="Write your post content here (Markdown supported)"
+                <Controller
+                  name="content"
+                  control={control}
+                  rules={{ required: 'Content is required' }}
+                  render={({ field }) => (
+                    <RichTextEditor
+                      value={field.value || ''}
+                      onChange={(value) => {
+                        field.onChange(value);
+                      }}
+                      placeholder="Write your post content here. Use the toolbar to format text (bold, italic, headings, lists, etc.)"
+                      error={errors.content?.message}
+                    />
+                  )}
                 />
                 {errors.content && <span className="error">{errors.content.message}</span>}
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginTop: 'var(--space-2)' }}>
+                  💡 Use the toolbar above to format your text. You can make text <strong>bold</strong>, <em>italic</em>, add headings, lists, links, and more.
+                </p>
               </div>
             </div>
           </div>

@@ -24,7 +24,7 @@ const Header = () => {
 
   const isActive = (path) => {
     if (path === ROUTES.HOME) {
-      return location.pathname === path || location.pathname === '/' || location.pathname === '/synodof' || location.pathname === '/synodof/';
+      return location.pathname === path || location.pathname === '/';
     }
     return location.pathname.startsWith(path);
   };

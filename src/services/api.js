@@ -254,9 +254,8 @@ apiClient.interceptors.response.use(
         tokenStorage.remove();
         refreshTokenStorage.remove();
         
-        if (window.location.pathname.startsWith('/journalist-portfolio/admin') || 
-            window.location.pathname.startsWith('/admin')) {
-          window.location.href = '/journalist-portfolio/admin/login';
+        if (window.location.pathname.startsWith('/admin')) {
+          window.location.href = '/admin/login';
         }
         
         return Promise.reject({

@@ -11,6 +11,7 @@ import { formatDate } from '@/utils/dateFormatter';
 import { ROUTES } from '@/config/constants';
 import Loading from '@/components/Loading';
 import { ENV } from '@/config/env';
+import { BreadcrumbSchema } from '@/components/SEO/StructuredData';
 
 const Portfolio = () => {
   const [posts, setPosts] = useState([]);
@@ -80,8 +81,15 @@ const Portfolio = () => {
     <>
       <Helmet>
         <title>Programs | {ENV.SITE_NAME}</title>
-        <meta name="description" content="Explore our community programs, initiatives, and projects that make a difference" />
+        <meta name="description" content="Explore our community programs, initiatives, and projects from Berhampur Diocesan Synod. Education, healthcare, youth development, and spiritual formation programs." />
+        <meta name="keywords" content="Berhampur Diocesan Synod programs, community programs, Christian NGO programs, education programs, healthcare services, youth development, Berhampur" />
+        <meta property="og:url" content={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/portfolio`} />
+        <link rel="canonical" href={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/portfolio`} />
       </Helmet>
+      <BreadcrumbSchema items={[
+        { name: 'Home', url: '/' },
+        { name: 'Programs', url: '/portfolio' }
+      ]} />
 
       <div className="portfolio-page">
         <div className="section">

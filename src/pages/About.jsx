@@ -11,6 +11,7 @@ import Loading from '@/components/Loading';
 import { ENV } from '@/config/env';
 import { ROUTES } from '@/config/constants';
 import { getSocialIconFromLink } from '@/utils/socialIcons';
+import { OrganizationSchema, BreadcrumbSchema } from '@/components/SEO/StructuredData';
 
 const About = () => {
   const [profile, setProfile] = useState(null);
@@ -84,8 +85,16 @@ const About = () => {
       <Helmet>
         <title>About Us | {ENV.SITE_NAME}</title>
         <meta name="description" content="Learn about Berhampur Diocesan Synod - our mission, vision, and commitment to serving the community through faith, hope, and love." />
-        {displayProfile.profile_image_url && <meta property="og:image" content={displayProfile.profile_image_url} />}
+        <meta name="keywords" content="Berhampur Diocesan Synod, About us, Christian NGO, mission, vision, Berhampur Diocese, Odisha" />
+        {displayProfile?.profile_image_url && <meta property="og:image" content={displayProfile.profile_image_url} />}
+        <meta property="og:url" content={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/about`} />
+        <link rel="canonical" href={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/about`} />
       </Helmet>
+      <OrganizationSchema profile={displayProfile} />
+      <BreadcrumbSchema items={[
+        { name: 'Home', url: '/' },
+        { name: 'About Us', url: '/about' }
+      ]} />
 
       <div className="about-page">
         <div className="section">

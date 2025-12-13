@@ -11,6 +11,7 @@ import { isValidEmail } from '@/utils/validation';
 import { toast } from 'react-toastify';
 import Loading from '@/components/Loading';
 import { ENV } from '@/config/env';
+import { OrganizationSchema, BreadcrumbSchema } from '@/components/SEO/StructuredData';
 
 const Contact = () => {
   const [submitting, setSubmitting] = useState(false);
@@ -84,8 +85,16 @@ const Contact = () => {
     <>
       <Helmet>
         <title>Contact | {ENV.SITE_NAME}</title>
-        <meta name="description" content="Get in touch for inquiries, collaborations, or story ideas" />
+        <meta name="description" content="Get in touch with Berhampur Diocesan Synod. Contact us for inquiries, collaborations, volunteering, donations, or to learn more about our programs." />
+        <meta name="keywords" content="contact Berhampur Diocesan Synod, Berhampur Diocese contact, Christian NGO contact, volunteer, donate, Berhampur" />
+        <meta property="og:url" content={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/contact`} />
+        <link rel="canonical" href={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/contact`} />
       </Helmet>
+      <OrganizationSchema profile={displayProfile} />
+      <BreadcrumbSchema items={[
+        { name: 'Home', url: '/' },
+        { name: 'Contact', url: '/contact' }
+      ]} />
 
       <div className="contact-page">
         <div className="section">

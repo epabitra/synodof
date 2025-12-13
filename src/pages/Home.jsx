@@ -13,6 +13,7 @@ import Loading from '@/components/Loading';
 import { ENV } from '@/config/env';
 import { ORGANIZATION_NAME, ORGANIZATION_TAGLINE } from '@/config/constants';
 import { getSocialIconFromLink } from '@/utils/socialIcons';
+import { OrganizationSchema, WebsiteSchema, LocalBusinessSchema } from '@/components/SEO/StructuredData';
 
 const Home = () => {
   const [profile, setProfile] = useState(null);
@@ -96,8 +97,14 @@ const Home = () => {
       <Helmet>
         <title>{ORGANIZATION_NAME} - {ENV.SITE_NAME}</title>
         <meta name="description" content={ORGANIZATION_TAGLINE || 'Walking with Christ on the Synodal Way. A Christian NGO serving the community through faith, hope, and love.'} />
-        {displayProfile.profile_image_url && <meta property="og:image" content={displayProfile.profile_image_url} />}
+        <meta name="keywords" content="Berhampur Diocesan Synod, Christian NGO, Berhampur Diocese, Christian organization, faith-based services, community programs, Berhampur, Odisha, India" />
+        {displayProfile?.profile_image_url && <meta property="og:image" content={displayProfile.profile_image_url} />}
+        <meta property="og:url" content={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/`} />
+        <link rel="canonical" href={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/`} />
       </Helmet>
+      <OrganizationSchema profile={displayProfile} />
+      <WebsiteSchema />
+      <LocalBusinessSchema profile={displayProfile} />
 
       <div className="home-page">
         {/* Hero Section */}

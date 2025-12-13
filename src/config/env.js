@@ -37,7 +37,7 @@ export const ENV = {
              'Berhampur Diocesan Synod',
   SITE_URL: import.meta.env.VITE_SITE_URL || 
             import.meta.env.REACT_APP_SITE_URL || 
-            '',
+            'https://www.synodofberhampur.com',
   GA_TRACKING_ID: import.meta.env.VITE_GA_TRACKING_ID || 
                   import.meta.env.REACT_APP_GA_TRACKING_ID || 
                   '',

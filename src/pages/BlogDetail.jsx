@@ -14,6 +14,7 @@ import { sanitizeHtml } from '@/utils/sanitize';
 import Loading from '@/components/Loading';
 import { ENV } from '@/config/env';
 import { ROUTES as APP_ROUTES, MEDIA_TYPE } from '@/config/constants';
+import { ArticleSchema, BreadcrumbSchema } from '@/components/SEO/StructuredData';
 
 const BlogDetail = () => {
   const { slug } = useParams();
@@ -111,12 +112,21 @@ const BlogDetail = () => {
       <Helmet>
         <title>{post.seo_title || post.title} | {ENV.SITE_NAME}</title>
         <meta name="description" content={post.seo_description || post.excerpt || post.title} />
+        <meta name="keywords" content={tags.join(', ') || 'Berhampur Diocesan Synod, news, updates, Christian NGO'} />
         {post.cover_image_url && <meta property="og:image" content={post.cover_image_url} />}
         <meta property="og:type" content="article" />
+        <meta property="og:url" content={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/blog/${post.slug}`} />
         {post.published_at && (
           <meta property="article:published_time" content={post.published_at} />
         )}
+        <link rel="canonical" href={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/blog/${post.slug}`} />
       </Helmet>
+      <ArticleSchema post={post} />
+      <BreadcrumbSchema items={[
+        { name: 'Home', url: '/' },
+        { name: 'News & Updates', url: '/blog' },
+        { name: post.title, url: `/blog/${post.slug}` }
+      ]} />
 
       <article className="blog-detail-page">
         <div className="container-narrow">

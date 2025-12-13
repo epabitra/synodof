@@ -12,7 +12,7 @@ if (typeof window !== 'undefined' && window.sessionStorage) {
   const storedPath = sessionStorage.getItem('githubPagesRedirect');
   if (storedPath) {
     sessionStorage.removeItem('githubPagesRedirect');
-    const basePath = '/journalist-portfolio';
+    const basePath = '';
     const currentPath = window.location.pathname;
     
     // Only restore if we're on index.html

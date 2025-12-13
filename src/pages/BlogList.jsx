@@ -11,6 +11,7 @@ import { formatDate } from '@/utils/dateFormatter';
 import { ROUTES, PAGINATION } from '@/config/constants';
 import Loading from '@/components/Loading';
 import { ENV } from '@/config/env';
+import { BreadcrumbSchema } from '@/components/SEO/StructuredData';
 
 const BlogList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -121,9 +122,16 @@ const BlogList = () => {
   return (
     <>
       <Helmet>
-        <title>Blog | {ENV.SITE_NAME}</title>
-        <meta name="description" content="Latest news stories, articles, and investigative reports" />
+        <title>News &amp; Updates | {ENV.SITE_NAME}</title>
+        <meta name="description" content="Latest news, updates, and articles from Berhampur Diocesan Synod. Stay informed about our programs, events, and community initiatives." />
+        <meta name="keywords" content="Berhampur Diocesan Synod news, updates, articles, Christian NGO news, Berhampur Diocese updates, community news" />
+        <meta property="og:url" content={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/blog`} />
+        <link rel="canonical" href={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/blog`} />
       </Helmet>
+      <BreadcrumbSchema items={[
+        { name: 'Home', url: '/' },
+        { name: 'News & Updates', url: '/blog' }
+      ]} />
 
       <div className="blog-list-page">
         <div className="section">

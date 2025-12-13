@@ -46,7 +46,7 @@ function App() {
       <HelmetProvider>
         <ThemeProvider>
           <AuthProvider>
-            <BrowserRouter basename={import.meta.env.PROD ? "/synodof" : ""} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <ScrollToTop />
             <Routes>
               {/* Public Routes */}

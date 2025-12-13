@@ -30,7 +30,7 @@ class ErrorBoundary extends Component {
             <button
               onClick={() => {
                 this.setState({ hasError: false, error: null });
-                window.location.href = '/journalist-portfolio/';
+                window.location.href = '/';
               }}
             >
               Go to Home

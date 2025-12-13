@@ -8,7 +8,7 @@
       // GitHub Pages SPA routing fix - Simple redirect to index.html
       (function() {
         var path = window.location.pathname;
-        var basePath = '/journalist-portfolio';
+        var basePath = '';
         var search = window.location.search;
         var hash = window.location.hash;
         
@@ -16,7 +16,7 @@
         var actualPath = path;
         
         // Remove base path
-        if (actualPath.startsWith(basePath)) {
+        if (basePath && actualPath.startsWith(basePath)) {
           actualPath = actualPath.substring(basePath.length);
         }
         
@@ -37,10 +37,10 @@
         }
         
         // Simple redirect to index.html (without appending path to avoid loop)
-        var redirectUrl = basePath + '/index.html' + search + (hash || '');
+        var redirectUrl = (basePath ? basePath : '') + '/index.html' + search + (hash || '');
         
         // Only redirect if we're not already on index.html
-        if (!path.includes('/index.html') || path !== basePath + '/index.html') {
+        if (!path.includes('/index.html') || path !== (basePath ? basePath : '') + '/index.html') {
           window.location.replace(redirectUrl);
         }
       })();
@@ -50,7 +50,7 @@
     <p>Redirecting...</p>
     <noscript>
       <p>Please enable JavaScript to view this site.</p>
-      <p><a href="/journalist-portfolio/">Click here to go to the home page</a></p>
+      <p><a href="/">Click here to go to the home page</a></p>
     </noscript>
   </body>
 </html>

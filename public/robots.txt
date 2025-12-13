@@ -1,0 +1,10 @@
+# robots.txt for www.synodofberhampur.com
+User-agent: *
+Allow: /
+
+# Disallow admin area
+Disallow: /admin/
+
+# Sitemap location
+Sitemap: https://www.synodofberhampur.com/sitemap.xml
+

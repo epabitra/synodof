@@ -137,7 +137,7 @@ const BlogList = () => {
         <div className="section">
           <div className="container">
             <div className="section-header text-center" style={{ marginBottom: 'var(--space-12)' }}>
-              <h1>Blog</h1>
+              <h1>News &amp; Updates</h1>
               <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', margin: 'var(--space-4) auto 0', fontSize: 'var(--text-lg)' }}>
                 Explore our latest stories, investigative reports, and feature articles covering politics, human rights, environment, and more.
               </p>

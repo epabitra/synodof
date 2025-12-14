@@ -72,6 +72,11 @@ const AdminLayout = ({ children }) => {
       label: 'Edit Profile',
       icon: '👤',
     },
+    {
+      path: ROUTES.ADMIN_DONATE,
+      label: 'Donate Info',
+      icon: '💰',
+    },
   ];
 
   return (

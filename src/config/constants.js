@@ -24,6 +24,7 @@ export const ROUTES = {
   BLOG_DETAIL: '/blog/:slug',
   PORTFOLIO: '/portfolio',
   CONTACT: '/contact',
+  DONATE: '/donate',
   ADMIN_LOGIN: '/admin/login',
   ADMIN_DASHBOARD: '/admin/dashboard',
   ADMIN_POSTS: '/admin/posts',
@@ -40,6 +41,7 @@ export const ROUTES = {
   ADMIN_PUBLICATION_NEW: '/admin/publications/new',
   ADMIN_PUBLICATION_EDIT: '/admin/publications/:id/edit',
   ADMIN_PROFILE: '/admin/profile',
+  ADMIN_DONATE: '/admin/donate',
 };
 
 export const API_ACTIONS = {
@@ -53,6 +55,7 @@ export const API_ACTIONS = {
   GET_PUBLICATIONS: 'getPublications',
   GET_TAGS: 'getTags',
   SEARCH_POSTS: 'searchPosts',
+  GET_DONATE_INFO: 'getDonateInfo',
   
   // Admin actions
   LOGIN: 'login',
@@ -80,6 +83,7 @@ export const API_ACTIONS = {
   CREATE_PUBLICATION: 'createPublication',
   UPDATE_PUBLICATION: 'updatePublication',
   DELETE_PUBLICATION: 'deletePublication',
+  UPDATE_DONATE_INFO: 'updateDonateInfo',
 };
 
 export const POST_STATUS = {

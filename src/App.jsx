@@ -25,6 +25,7 @@ import BlogList from '@/pages/BlogList';
 import BlogDetail from '@/pages/BlogDetail';
 import Portfolio from '@/pages/Portfolio';
 import Contact from '@/pages/Contact';
+import Donate from '@/pages/Donate';
 
 // Admin Pages
 import AdminLogin from '@/pages/Admin/Login';
@@ -38,6 +39,7 @@ import AdminAwardEditor from '@/pages/Admin/AwardEditor';
 import AdminPublicationList from '@/pages/Admin/PublicationList';
 import AdminPublicationEditor from '@/pages/Admin/PublicationEditor';
 import AdminProfileEditor from '@/pages/Admin/ProfileEditor';
+import AdminDonateEditor from '@/pages/Admin/DonateEditor';
 import AdminLayout from '@/components/Layout/AdminLayout';
 
 function App() {
@@ -95,6 +97,14 @@ function App() {
                 element={
                   <MainLayout>
                     <Contact />
+                  </MainLayout>
+                }
+              />
+              <Route
+                path={ROUTES.DONATE}
+                element={
+                  <MainLayout>
+                    <Donate />
                   </MainLayout>
                 }
               />
@@ -238,6 +248,16 @@ function App() {
                   <ProtectedRoute>
                     <AdminLayout>
                       <AdminProfileEditor />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path={ROUTES.ADMIN_DONATE}
+                element={
+                  <ProtectedRoute>
+                    <AdminLayout>
+                      <AdminDonateEditor />
                     </AdminLayout>
                   </ProtectedRoute>
                 }

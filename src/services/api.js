@@ -441,6 +441,17 @@ export const publicAPI = {
   },
 
   /**
+   * Get donate information
+   */
+  getDonateInfo: async () => {
+    return apiClient.get('', {
+      params: {
+        action: API_ACTIONS.GET_DONATE_INFO,
+      },
+    });
+  },
+
+  /**
    * Search posts
    */
   searchPosts: async (query, params = {}) => {
@@ -1420,6 +1431,55 @@ export const adminAPI = {
       return response;
     } catch (error) {
       console.error('Refresh token error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get donate information (admin version)
+   */
+  getDonateInfo: async () => {
+    try {
+      const token = tokenStorage.get();
+      return apiClient.get('', {
+        params: {
+          action: API_ACTIONS.GET_DONATE_INFO,
+          token: token || '',
+        },
+      });
+    } catch (error) {
+      console.error('Get donate info error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Update donate information
+   */
+  updateDonateInfo: async (donateData) => {
+    try {
+      const token = tokenStorage.get();
+      // Use form data to avoid CORS preflight
+      const params = new URLSearchParams();
+      params.append('action', API_ACTIONS.UPDATE_DONATE_INFO);
+      params.append('token', token || '');
+      
+      // Add all donate data fields
+      Object.keys(donateData).forEach(key => {
+        const value = donateData[key];
+        if (value !== null && value !== undefined) {
+          params.append(key, String(value));
+        }
+      });
+      
+      const response = await apiClient.post('', params.toString(), {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+      return response;
+    } catch (error) {
+      console.error('Update donate info error:', error);
       throw error;
     }
   },

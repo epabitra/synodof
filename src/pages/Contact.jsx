@@ -110,7 +110,7 @@ const Contact = () => {
               </p>
             </div>
 
-            <div style={{
+            <div className="contact-cards-grid" style={{
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
               gap: 'var(--space-12)',

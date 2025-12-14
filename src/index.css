@@ -2251,6 +2251,11 @@ a:hover {
     display: block;
   }
 
+  .contact-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-8) !important;
+  }
+
   .section {
     padding: var(--space-8) 0;
   }

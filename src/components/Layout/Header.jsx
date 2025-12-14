@@ -35,6 +35,7 @@ const Header = () => {
     { path: ROUTES.BLOG, label: 'News & Updates' },
     { path: ROUTES.PORTFOLIO, label: 'Programs' },
     { path: ROUTES.CONTACT, label: 'Contact' },
+    { path: ROUTES.DONATE, label: 'Donate' },
   ];
 
   return (

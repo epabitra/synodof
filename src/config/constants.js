@@ -42,6 +42,7 @@ export const ROUTES = {
   ADMIN_PUBLICATION_EDIT: '/admin/publications/:id/edit',
   ADMIN_PROFILE: '/admin/profile',
   ADMIN_DONATE: '/admin/donate',
+  ADMIN_USERS: '/admin/users',
 };
 
 export const API_ACTIONS = {
@@ -84,6 +85,10 @@ export const API_ACTIONS = {
   UPDATE_PUBLICATION: 'updatePublication',
   DELETE_PUBLICATION: 'deletePublication',
   UPDATE_DONATE_INFO: 'updateDonateInfo',
+  LIST_USERS: 'listUsers',
+  CREATE_USER: 'createUser',
+  DELETE_USER: 'deleteUser',
+  CHECK_SUPER_ADMIN: 'checkSuperAdmin',
 };
 
 export const POST_STATUS = {

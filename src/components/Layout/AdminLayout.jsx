@@ -77,6 +77,11 @@ const AdminLayout = ({ children }) => {
       label: 'Donate Info',
       icon: '💰',
     },
+    {
+      path: ROUTES.ADMIN_USERS,
+      label: 'Manage Users',
+      icon: '👥',
+    },
   ];
 
   return (

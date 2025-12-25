@@ -1483,6 +1483,94 @@ export const adminAPI = {
       throw error;
     }
   },
+
+  /**
+   * List users (super admin only)
+   */
+  listUsers: async () => {
+    try {
+      const token = tokenStorage.get();
+      return apiClient.get('', {
+        params: {
+          action: API_ACTIONS.LIST_USERS,
+          token: token || '',
+        },
+      });
+    } catch (error) {
+      console.error('List users error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Create user (super admin only)
+   */
+  createUser: async (userData) => {
+    try {
+      const token = tokenStorage.get();
+      const params = new URLSearchParams();
+      params.append('action', API_ACTIONS.CREATE_USER);
+      params.append('token', token || '');
+      
+      Object.keys(userData).forEach(key => {
+        const value = userData[key];
+        if (value !== null && value !== undefined) {
+          params.append(key, String(value));
+        }
+      });
+      
+      const response = await apiClient.post('', params.toString(), {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+      return response;
+    } catch (error) {
+      console.error('Create user error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Delete user (super admin only)
+   */
+  deleteUser: async (userId) => {
+    try {
+      const token = tokenStorage.get();
+      const params = new URLSearchParams();
+      params.append('action', API_ACTIONS.DELETE_USER);
+      params.append('id', userId);
+      params.append('token', token || '');
+      
+      const response = await apiClient.post('', params.toString(), {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+      return response;
+    } catch (error) {
+      console.error('Delete user error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Check if current user is super admin
+   */
+  checkSuperAdmin: async () => {
+    try {
+      const token = tokenStorage.get();
+      return apiClient.get('', {
+        params: {
+          action: API_ACTIONS.CHECK_SUPER_ADMIN,
+          token: token || '',
+        },
+      });
+    } catch (error) {
+      console.error('Check super admin error:', error);
+      throw error;
+    }
+  },
 };
 
 export default apiClient;

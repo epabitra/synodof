@@ -40,6 +40,7 @@ import AdminPublicationList from '@/pages/Admin/PublicationList';
 import AdminPublicationEditor from '@/pages/Admin/PublicationEditor';
 import AdminProfileEditor from '@/pages/Admin/ProfileEditor';
 import AdminDonateEditor from '@/pages/Admin/DonateEditor';
+import AdminUserList from '@/pages/Admin/UserList';
 import AdminLayout from '@/components/Layout/AdminLayout';
 
 function App() {
@@ -258,6 +259,16 @@ function App() {
                   <ProtectedRoute>
                     <AdminLayout>
                       <AdminDonateEditor />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path={ROUTES.ADMIN_USERS}
+                element={
+                  <ProtectedRoute>
+                    <AdminLayout>
+                      <AdminUserList />
                     </AdminLayout>
                   </ProtectedRoute>
                 }

@@ -997,7 +997,11 @@ const AdminPostEditor = () => {
                       Maximum 20 files allowed. Currently: {mediaUrls.length} / 20
                     </p>
                     <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>
-                      Supported formats: JPEG, PNG, GIF, WebP, HEIC. HEIC images from Mac will be automatically converted to JPEG.
+                      {watchedMediaType === MEDIA_TYPE.VIDEO ? (
+                        <>Supported formats: MP4, WebM, QuickTime (MOV). You can upload multiple video files at once.</>
+                      ) : (
+                        <>Supported formats: JPEG, PNG, GIF, WebP, HEIC. HEIC images from Mac will be automatically converted to JPEG.</>
+                      )}
                     </p>
                     {uploading && uploadingType === 'media' && (
                       <div style={{ 

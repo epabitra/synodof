@@ -1,6 +1,6 @@
 /**
- * Professional Blog Detail Page with Realistic Content
- * Enhanced reading experience with full content
+ * Professional Program Detail Page
+ * Enhanced reading experience with full content for program posts
  */
 
 import { useState, useEffect } from 'react';
@@ -17,7 +17,7 @@ import { ENV } from '@/config/env';
 import { ROUTES as APP_ROUTES, MEDIA_TYPE } from '@/config/constants';
 import { ArticleSchema, BreadcrumbSchema } from '@/components/SEO/StructuredData';
 
-const BlogDetail = () => {
+const ProgramDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [post, setPost] = useState(null);
@@ -53,28 +53,28 @@ const BlogDetail = () => {
       if (postData?.success && postData.data) {
         const loadedPost = postData.data;
         
-        // If this is a program-only post (not 'both'), redirect to program detail page
-        if (loadedPost.type === 'programs') {
-          navigate(`${APP_ROUTES.PROGRAM_DETAIL.replace(':slug', slug)}`, { replace: true });
+        // If this is a news-only post (not 'both'), redirect to blog detail page
+        if (loadedPost.type === 'news') {
+          navigate(`${APP_ROUTES.BLOG}/${slug}`, { replace: true });
           return;
         }
         
-        // 'both' type posts can be viewed on blog detail page, so continue
+        // 'both' type posts can be viewed on program detail page, so continue
         setPost(loadedPost);
 
-        // Load related posts (only news type)
+        // Load related posts (filter by program type)
         try {
           const relatedData = await publicAPI.listPosts({
             limit: 6,
             status: 'published',
-            type: 'news',
+            type: 'programs',
             exclude: loadedPost.id,
           }).catch(() => null);
           
           if (relatedData?.success && relatedData.data?.length > 0) {
-            // Filter to only show news or both type posts
+            // Filter to only show programs or both type posts
             const filtered = relatedData.data.filter(p => 
-              p.type === 'news' || p.type === 'both'
+              p.type === 'programs' || p.type === 'both'
             );
             setRelatedPosts(filtered.slice(0, 3));
           } else {
@@ -85,30 +85,30 @@ const BlogDetail = () => {
           setRelatedPosts([]);
         }
       } else {
-        setError('Post not found');
+        setError('Program not found');
       }
     } catch (err) {
-      console.error('Error loading post:', err);
-      setError(err.message || 'Failed to load post');
+      console.error('Error loading program:', err);
+      setError(err.message || 'Failed to load program');
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) {
-    return <Loading fullScreen message="Loading post..." />;
+    return <Loading fullScreen message="Loading program..." />;
   }
 
   if (error || !post) {
     return (
       <div className="error-container">
         <div className="error-message">
-          <h2>Post Not Found</h2>
-          <p>{error || 'The post you are looking for does not exist.'}</p>
+          <h2>Program Not Found</h2>
+          <p>{error || 'The program you are looking for does not exist.'}</p>
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center' }}>
-          <button className="btn btn-primary" onClick={() => navigate(APP_ROUTES.BLOG)}>
-            Back to Blog
+          <button className="btn btn-primary" onClick={() => navigate(APP_ROUTES.PORTFOLIO)}>
+            Back to Programs
           </button>
           <button className="btn btn-outline" onClick={() => navigate(APP_ROUTES.HOME)}>
             Go Home
@@ -127,20 +127,20 @@ const BlogDetail = () => {
       <Helmet>
         <title>{post.seo_title || post.title} | {ENV.SITE_NAME}</title>
         <meta name="description" content={post.seo_description || post.excerpt || post.title} />
-        <meta name="keywords" content={tags.join(', ') || 'Berhampur Diocesan Synod, news, updates, Christian NGO'} />
+        <meta name="keywords" content={tags.join(', ') || 'Berhampur Diocesan Synod, programs, initiatives, Christian NGO'} />
         {post.cover_image_url && <meta property="og:image" content={post.cover_image_url} />}
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/blog/${post.slug}`} />
+        <meta property="og:url" content={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/programs/${post.slug}`} />
         {post.published_at && (
           <meta property="article:published_time" content={post.published_at} />
         )}
-        <link rel="canonical" href={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/blog/${post.slug}`} />
+        <link rel="canonical" href={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/programs/${post.slug}`} />
       </Helmet>
       <ArticleSchema post={post} />
       <BreadcrumbSchema items={[
         { name: 'Home', url: '/' },
-        { name: 'News & Updates', url: '/blog' },
-        { name: post.title, url: `/blog/${post.slug}` }
+        { name: 'Programs', url: '/portfolio' },
+        { name: post.title, url: `/programs/${post.slug}` }
       ]} />
 
       <article className="blog-detail-page">
@@ -313,7 +313,7 @@ const BlogDetail = () => {
             borderRadius: 'var(--radius-lg)',
             textAlign: 'center'
           }}>
-            <h3 style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--text-lg)' }}>Share This Story</h3>
+            <h3 style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--text-lg)' }}>Share This Program</h3>
             <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'center', flexWrap: 'wrap' }}>
               <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(window.location.href)}`} 
                  target="_blank" 
@@ -347,15 +347,15 @@ const BlogDetail = () => {
             flexWrap: 'wrap',
             gap: 'var(--space-4)'
           }}>
-            <Link to={APP_ROUTES.BLOG} className="btn btn-outline">
-              ← Back to Blog
+            <Link to={APP_ROUTES.PORTFOLIO} className="btn btn-outline">
+              ← Back to Programs
             </Link>
             <Link to={APP_ROUTES.CONTACT} className="btn btn-primary">
               Get In Touch
             </Link>
           </div>
 
-          {/* Related Posts */}
+          {/* Related Programs */}
           {relatedPosts.length > 0 && (
             <section className="related-posts" style={{ 
               marginTop: 'var(--space-16)',
@@ -363,18 +363,14 @@ const BlogDetail = () => {
               borderTop: '2px solid var(--border-light)'
             }}>
               <h2 style={{ marginBottom: 'var(--space-8)', textAlign: 'center' }}>
-                Related Stories
+                Related Programs
               </h2>
               <div className="posts-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
                 {relatedPosts.map((relatedPost) => (
                   <article key={relatedPost.id} className="post-card">
                     {relatedPost.cover_image_url && (
                       <div className="post-image">
-                        <Link to={
-                          (relatedPost.type === 'programs' || relatedPost.type === 'both')
-                            ? APP_ROUTES.PROGRAM_DETAIL.replace(':slug', relatedPost.slug)
-                            : APP_ROUTES.BLOG_DETAIL.replace(':slug', relatedPost.slug)
-                        }>
+                        <Link to={APP_ROUTES.PROGRAM_DETAIL.replace(':slug', relatedPost.slug)}>
                           <img src={relatedPost.cover_image_url} alt={relatedPost.title} loading="lazy" />
                         </Link>
                       </div>
@@ -389,26 +385,15 @@ const BlogDetail = () => {
                         )}
                       </div>
                       <h3>
-                        <Link to={
-                          (relatedPost.type === 'programs' || relatedPost.type === 'both')
-                            ? APP_ROUTES.PROGRAM_DETAIL.replace(':slug', relatedPost.slug)
-                            : APP_ROUTES.BLOG_DETAIL.replace(':slug', relatedPost.slug)
-                        }>
+                        <Link to={APP_ROUTES.PROGRAM_DETAIL.replace(':slug', relatedPost.slug)}>
                           {relatedPost.title}
                         </Link>
                       </h3>
                       {relatedPost.excerpt && (
                         <p className="post-excerpt">{relatedPost.excerpt}</p>
                       )}
-                      <Link 
-                        to={
-                          (relatedPost.type === 'programs' || relatedPost.type === 'both')
-                            ? APP_ROUTES.PROGRAM_DETAIL.replace(':slug', relatedPost.slug)
-                            : APP_ROUTES.BLOG_DETAIL.replace(':slug', relatedPost.slug)
-                        } 
-                        className="read-more"
-                      >
-                        Read More →
+                      <Link to={APP_ROUTES.PROGRAM_DETAIL.replace(':slug', relatedPost.slug)} className="read-more">
+                        Learn More →
                       </Link>
                     </div>
                   </article>
@@ -422,4 +407,5 @@ const BlogDetail = () => {
   );
 };
 
-export default BlogDetail;
+export default ProgramDetail;
+

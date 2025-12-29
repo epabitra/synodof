@@ -224,49 +224,56 @@ const Home = () => {
               </div>
 
               <div className="posts-grid">
-                {displayPosts.map((post) => (
-                  <article key={post.id} className="post-card">
-                    {post.cover_image_url && (
-                      <div className="post-image">
-                        <Link to={`${ROUTES.BLOG}/${post.slug}`}>
-                          <img src={post.cover_image_url} alt={post.title} loading="lazy" />
-                        </Link>
-                      </div>
-                    )}
-                    <div className="post-content mt-4">
-                      <div className="post-meta">
-                        <time dateTime={post.published_at}>
-                          {formatDate(post.published_at)}
-                        </time>
-                        {post.category && (
-                          <span className="post-category">{post.category}</span>
-                        )}
-                      </div>
-                      <h3>
-                        <Link to={`${ROUTES.BLOG}/${post.slug}`}>{post.title}</Link>
-                      </h3>
-                      {post.subtitle && (
-                        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginBottom: 'var(--space-2)', fontStyle: 'italic' }}>
-                          {post.subtitle}
-                        </p>
-                      )}
-                      {post.excerpt && (
-                        <p className="post-excerpt">{post.excerpt}</p>
-                      )}
-                      {post.read_time_minutes && (
-                        <div className="post-meta mt-4" style={{ marginTop: 'auto', paddingTop: 'var(--space-4)' }}>
-                          <span className="read-time">{post.read_time_minutes} min read</span>
-                          {post.view_count && (
-                            <span style={{ marginLeft: 'var(--space-3)' }}>👁️ {post.view_count.toLocaleString()} views</span>
-                          )}
+                {displayPosts.map((post) => {
+                  // Determine the correct route based on post type
+                  const postRoute = (post.type === 'programs' || post.type === 'both') 
+                    ? ROUTES.PROGRAM_DETAIL.replace(':slug', post.slug)
+                    : ROUTES.BLOG_DETAIL.replace(':slug', post.slug);
+                  
+                  return (
+                    <article key={post.id} className="post-card">
+                      {post.cover_image_url && (
+                        <div className="post-image">
+                          <Link to={postRoute}>
+                            <img src={post.cover_image_url} alt={post.title} loading="lazy" />
+                          </Link>
                         </div>
                       )}
-                      <Link to={`${ROUTES.BLOG}/${post.slug}`} className="read-more">
-                        Read More →
-                      </Link>
-                    </div>
-                  </article>
-                ))}
+                      <div className="post-content mt-4">
+                        <div className="post-meta">
+                          <time dateTime={post.published_at}>
+                            {formatDate(post.published_at)}
+                          </time>
+                          {post.category && (
+                            <span className="post-category">{post.category}</span>
+                          )}
+                        </div>
+                        <h3>
+                          <Link to={postRoute}>{post.title}</Link>
+                        </h3>
+                        {post.subtitle && (
+                          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginBottom: 'var(--space-2)', fontStyle: 'italic' }}>
+                            {post.subtitle}
+                          </p>
+                        )}
+                        {post.excerpt && (
+                          <p className="post-excerpt">{post.excerpt}</p>
+                        )}
+                        {post.read_time_minutes && (
+                          <div className="post-meta mt-4" style={{ marginTop: 'auto', paddingTop: 'var(--space-4)' }}>
+                            <span className="read-time">{post.read_time_minutes} min read</span>
+                            {post.view_count && (
+                              <span style={{ marginLeft: 'var(--space-3)' }}>👁️ {post.view_count.toLocaleString()} views</span>
+                            )}
+                          </div>
+                        )}
+                        <Link to={postRoute} className="read-more">
+                          Read More →
+                        </Link>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
 
               <div className="text-center" style={{ marginTop: 'var(--space-12)' }}>

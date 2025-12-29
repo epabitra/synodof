@@ -29,24 +29,34 @@ const Portfolio = () => {
       setLoading(true);
       setError(null);
 
+      const params = {
+        status: 'published',
+        type: 'programs', // Filter by programs type (will also include 'both' type posts)
+        limit: 50,
+        sort: 'published_at',
+        order: 'desc', // Newest first
+      };
+
       const [postsData, categoriesData] = await Promise.all([
-        publicAPI.listPosts({
-          featured: 'true',
-          status: 'published',
-          limit: 50,
-        }).catch(() => null),
+        publicAPI.listPosts(params).catch(() => null),
         publicAPI.getCategories().catch(() => null),
       ]);
 
       // Filter posts by type: show only 'programs' or 'both' type posts
       if (postsData?.success && postsData.data?.length > 0) {
-        postsData.data = postsData.data.filter(post => 
+        let filteredPosts = postsData.data.filter(post => 
           post.type === 'programs' || post.type === 'both'
         );
-      }
-
-      if (postsData?.success && postsData.data?.length > 0) {
-        setPosts(postsData.data);
+        
+        // Sort posts by published_at date (newest first) as fallback if API doesn't sort
+        let sortedPosts = [...filteredPosts];
+        sortedPosts.sort((a, b) => {
+          const dateA = a.published_at || a.created_at || '';
+          const dateB = b.published_at || b.created_at || '';
+          return new Date(dateB) - new Date(dateA); // Descending order (newest first)
+        });
+        
+        setPosts(sortedPosts);
       } else {
         setPosts([]);
       }
@@ -146,7 +156,7 @@ const Portfolio = () => {
                   <article key={post.id} className="post-card">
                     {post.cover_image_url && (
                       <div className="post-image">
-                        <Link to={`${ROUTES.BLOG}/${post.slug}`}>
+                        <Link to={ROUTES.PROGRAM_DETAIL.replace(':slug', post.slug)}>
                           <img src={post.cover_image_url} alt={post.title} loading="lazy" />
                         </Link>
                       </div>
@@ -161,7 +171,7 @@ const Portfolio = () => {
                         )}
                       </div>
                       <h2>
-                        <Link to={`${ROUTES.BLOG}/${post.slug}`}>{post.title}</Link>
+                        <Link to={ROUTES.PROGRAM_DETAIL.replace(':slug', post.slug)}>{post.title}</Link>
                       </h2>
                       {post.subtitle && (
                         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginBottom: 'var(--space-2)', fontStyle: 'italic' }}>
@@ -181,7 +191,7 @@ const Portfolio = () => {
                           </span>
                         )}
                       </div>
-                      <Link to={`${ROUTES.BLOG}/${post.slug}`} className="read-more">
+                      <Link to={ROUTES.PROGRAM_DETAIL.replace(':slug', post.slug)} className="read-more">
                         Learn More →
                       </Link>
                     </div>

@@ -3,7 +3,7 @@
  * Create and edit blog posts
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { adminAPI } from '@/services/api';
@@ -17,6 +17,7 @@ import { isValidYouTubeUrl, getYouTubeEmbedUrl } from '@/utils/youtube';
 import { toast } from 'react-toastify';
 import Loading from '@/components/Loading';
 import { Helmet } from 'react-helmet-async';
+import MediaCarousel from '@/components/ImageCarousel/MediaCarousel';
 import RichTextEditor from '@/components/RichTextEditor';
 
 const AdminPostEditor = () => {
@@ -29,7 +30,7 @@ const AdminPostEditor = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadingType, setUploadingType] = useState(null); // 'cover' or 'media'
   const [coverImagePreview, setCoverImagePreview] = useState('');
-  const [mediaPreview, setMediaPreview] = useState('');
+  const [mediaUrls, setMediaUrls] = useState([]);
   const [youtubeLink, setYoutubeLink] = useState('');
   const [videoSource, setVideoSource] = useState('upload'); // 'upload' or 'youtube'
   const [categories, setCategories] = useState([]);
@@ -55,7 +56,7 @@ const AdminPostEditor = () => {
       type: POST_TYPE.PROGRAMS,
       media_type: MEDIA_TYPE.NONE,
       cover_image_url: '',
-      media_url: '',
+      media_urls: '',
       is_featured: false,
       published_at: getCurrentLocalDateTime(), // Set to current date/time in user's timezone
     },
@@ -65,6 +66,23 @@ const AdminPostEditor = () => {
   const watchedSlug = watch('slug');
   const watchedStatus = watch('status');
   const watchedMediaType = watch('media_type');
+
+  // Clear media URLs when media type changes from one type to another
+  const prevMediaTypeRef = useRef(watchedMediaType);
+  useEffect(() => {
+    // Only clear if media type actually changed from one valid type to another
+    if (prevMediaTypeRef.current !== watchedMediaType && 
+        prevMediaTypeRef.current !== MEDIA_TYPE.NONE && 
+        watchedMediaType !== MEDIA_TYPE.NONE &&
+        mediaUrls.length > 0) {
+      // Clear media URLs when switching between image and video
+      setMediaUrls([]);
+      setValue('media_urls', '');
+      setYoutubeLink('');
+      toast.info('Media URLs cleared due to media type change');
+    }
+    prevMediaTypeRef.current = watchedMediaType;
+  }, [watchedMediaType, mediaUrls.length, setValue]);
 
   // Auto-generate slug from title
   useEffect(() => {
@@ -203,7 +221,9 @@ const AdminPostEditor = () => {
           type: post.type || POST_TYPE.PROGRAMS,
           media_type: post.media_type || MEDIA_TYPE.NONE,
           cover_image_url: post.cover_image_url || '',
-          media_url: post.media_url || '',
+          media_urls: Array.isArray(post.media_urls) 
+            ? JSON.stringify(post.media_urls) 
+            : (post.media_urls ? post.media_urls : (post.media_url ? JSON.stringify([post.media_url]) : '')),
           is_featured: post.is_featured || false,
           published_at: post.published_at 
             ? isoToLocalDateTime(post.published_at) 
@@ -213,15 +233,31 @@ const AdminPostEditor = () => {
         if (post.cover_image_url) {
           setCoverImagePreview(post.cover_image_url);
         }
-        if (post.media_url) {
-          setMediaPreview(post.media_url);
-          // Check if it's a YouTube URL
-          if (isValidYouTubeUrl(post.media_url)) {
-            setVideoSource('youtube');
-            setYoutubeLink(post.media_url);
-          } else {
-            setVideoSource('upload');
+        // Load media URLs
+        let loadedMediaUrls = [];
+        if (post.media_urls) {
+          try {
+            loadedMediaUrls = Array.isArray(post.media_urls) 
+              ? post.media_urls 
+              : (typeof post.media_urls === 'string' ? JSON.parse(post.media_urls) : []);
+          } catch (e) {
+            // Fallback: if media_url exists (old format), use it
+            if (post.media_url) {
+              loadedMediaUrls = [post.media_url];
+            }
           }
+        } else if (post.media_url) {
+          // Backward compatibility: convert old media_url to array
+          loadedMediaUrls = [post.media_url];
+        }
+        setMediaUrls(Array.isArray(loadedMediaUrls) ? loadedMediaUrls : []);
+        
+        // Check if any media URL is YouTube
+        if (loadedMediaUrls.length > 0 && isValidYouTubeUrl(loadedMediaUrls[0])) {
+          setVideoSource('youtube');
+          setYoutubeLink(loadedMediaUrls[0]);
+        } else {
+          setVideoSource('upload');
         }
       } else {
         toast.error('Post not found');
@@ -298,8 +334,12 @@ const AdminPostEditor = () => {
           setValue('cover_image_url', url);
           setCoverImagePreview(url);
         } else if (type === 'media') {
-          setValue('media_url', url);
-          setMediaPreview(url);
+          // Add to media URLs array
+          setMediaUrls(prev => {
+            const newMediaUrls = [...prev, url];
+            setValue('media_urls', JSON.stringify(newMediaUrls));
+            return newMediaUrls;
+          });
         }
       } else {
         // Fallback to API upload
@@ -313,8 +353,12 @@ const AdminPostEditor = () => {
             setValue('cover_image_url', url);
             setCoverImagePreview(url);
           } else if (type === 'media') {
-            setValue('media_url', url);
-            setMediaPreview(url);
+            // Add to media URLs array
+            setMediaUrls(prev => {
+              const newMediaUrls = [...prev, url];
+              setValue('media_urls', JSON.stringify(newMediaUrls));
+              return newMediaUrls;
+            });
           }
         } else {
           throw new Error('File upload failed');
@@ -327,6 +371,126 @@ const AdminPostEditor = () => {
       setUploading(false);
       setUploadingType(null);
       setUploadProgress(0);
+    }
+  };
+
+  const handleMultipleFileUpload = async (files, type) => {
+    const MAX_FILES = 20;
+    const currentCount = mediaUrls.length;
+    const filesToUpload = Array.from(files);
+    
+    // Check total limit
+    if (currentCount + filesToUpload.length > MAX_FILES) {
+      const allowed = MAX_FILES - currentCount;
+      if (allowed <= 0) {
+        toast.error(`Maximum ${MAX_FILES} files allowed. Please remove some files first.`);
+        return;
+      }
+      toast.warning(`Only ${allowed} more file(s) can be uploaded. ${filesToUpload.length - allowed} file(s) will be skipped.`);
+      filesToUpload.splice(allowed);
+    }
+
+    if (filesToUpload.length === 0) {
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setUploadingType(type);
+      
+      const uploadedUrls = [];
+      let uploadedCount = 0;
+
+      // Upload files sequentially to avoid conflicts
+      for (let i = 0; i < filesToUpload.length; i++) {
+        const file = filesToUpload[i];
+        setUploadProgress(Math.round(((i + 1) / filesToUpload.length) * 100));
+
+        try {
+          let url;
+          
+          // Check if Firebase is configured, otherwise fallback to API
+          if (firebaseStorageService.isConfigured()) {
+            const isVideo = file.type.startsWith('video/');
+            const uploadFunction = isVideo 
+              ? firebaseStorageService.uploadVideo 
+              : firebaseStorageService.uploadImage;
+            
+            const folder = type === 'cover' ? 'cover-images' : (isVideo ? 'videos' : 'images');
+            
+            url = await uploadFunction(file, {
+              folder,
+              onProgress: (progress) => {
+                // Calculate progress for current file within total progress
+                const fileProgress = Math.round((i / filesToUpload.length) * 100 + (progress / filesToUpload.length));
+                setUploadProgress(fileProgress);
+              },
+            });
+          } else {
+            // Fallback to API upload
+            const result = await adminAPI.uploadMedia(file, (progress) => {
+              const fileProgress = Math.round((i / filesToUpload.length) * 100 + (progress / filesToUpload.length));
+              setUploadProgress(fileProgress);
+            });
+
+            if (result.success && result.data) {
+              url = result.data.url || result.data.public_url;
+            } else {
+              throw new Error('File upload failed');
+            }
+          }
+
+          if (url) {
+            uploadedUrls.push(url);
+            uploadedCount++;
+          }
+        } catch (err) {
+          console.error(`Error uploading file ${i + 1}:`, err);
+          toast.error(`Failed to upload ${file.name || 'file'}`);
+        }
+      }
+
+      // Update state with all uploaded URLs at once
+      if (uploadedUrls.length > 0) {
+        setMediaUrls(prev => {
+          const newMediaUrls = [...prev, ...uploadedUrls];
+          setValue('media_urls', JSON.stringify(newMediaUrls));
+          return newMediaUrls;
+        });
+        toast.success(`Successfully uploaded ${uploadedCount} file(s)`);
+      }
+
+      if (uploadedCount < filesToUpload.length) {
+        toast.warning(`${uploadedCount} of ${filesToUpload.length} file(s) uploaded successfully`);
+      }
+    } catch (err) {
+      console.error('Multiple file upload error:', err);
+      toast.error('Some files failed to upload');
+    } finally {
+      setUploading(false);
+      setUploadingType(null);
+      setUploadProgress(0);
+    }
+  };
+
+  const handleRemoveMediaUrl = (index) => {
+    const newMediaUrls = mediaUrls.filter((_, i) => i !== index);
+    setMediaUrls(newMediaUrls);
+    setValue('media_urls', JSON.stringify(newMediaUrls));
+  };
+
+  const handleAddMediaUrl = (url) => {
+    const MAX_FILES = 20;
+    
+    if (url && url.trim()) {
+      if (mediaUrls.length >= MAX_FILES) {
+        toast.error(`Maximum ${MAX_FILES} files allowed. Please remove some files first.`);
+        return;
+      }
+      const newMediaUrls = [...mediaUrls, url.trim()];
+      setMediaUrls(newMediaUrls);
+      setValue('media_urls', JSON.stringify(newMediaUrls));
+      setYoutubeLink('');
     }
   };
 
@@ -368,10 +532,32 @@ const AdminPostEditor = () => {
         return;
       }
 
+      // Handle media_urls - use the state directly as it's the source of truth
+      // The form field might not always be in sync, so use the state
+      let mediaUrlsArray = [];
+      if (mediaUrls && mediaUrls.length > 0) {
+        // Use state directly - it's already an array
+        mediaUrlsArray = mediaUrls.filter(url => url && url.trim() !== '');
+      } else if (sanitizedData.media_urls) {
+        // Fallback to form data if state is empty
+        try {
+          if (typeof sanitizedData.media_urls === 'string' && sanitizedData.media_urls.trim() !== '') {
+            const parsed = JSON.parse(sanitizedData.media_urls);
+            mediaUrlsArray = Array.isArray(parsed) ? parsed : [parsed];
+          } else if (Array.isArray(sanitizedData.media_urls)) {
+            mediaUrlsArray = sanitizedData.media_urls;
+          }
+        } catch (e) {
+          console.error('Error parsing media_urls from form:', e, sanitizedData.media_urls);
+          mediaUrlsArray = [];
+        }
+      }
+
       // Prepare final post data
       const postData = {
         ...sanitizedData,
         tags: tagsArray,
+        media_urls: mediaUrlsArray.length > 0 ? JSON.stringify(mediaUrlsArray) : '',
         published_at:
           sanitizedData.status === POST_STATUS.PUBLISHED && !sanitizedData.published_at
             ? getCurrentISO()
@@ -622,9 +808,12 @@ const AdminPostEditor = () => {
 
             {watchedMediaType !== MEDIA_TYPE.NONE && (
               <div className="form-group">
-                <label htmlFor="media_url">
-                  {watchedMediaType === MEDIA_TYPE.VIDEO ? 'Video' : 'Image'} Media
+                <label htmlFor="media_urls">
+                  {watchedMediaType === MEDIA_TYPE.VIDEO ? 'Video' : 'Image'} Media (Multiple)
                 </label>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginBottom: 'var(--space-3)' }}>
+                  Add multiple {watchedMediaType === MEDIA_TYPE.VIDEO ? 'videos' : 'images'} that will be displayed as a carousel
+                </p>
                 
                 {/* Video Source Selection (only for videos) */}
                 {watchedMediaType === MEDIA_TYPE.VIDEO && (
@@ -632,8 +821,20 @@ const AdminPostEditor = () => {
                     <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '500' }}>
                       Video Source:
                     </label>
-                    <div style={{ display: 'flex', gap: 'var(--space-4)' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', cursor: 'pointer' }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: 'var(--space-4)',
+                      flexWrap: 'nowrap',
+                      alignItems: 'center'
+                    }}>
+                      <label style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 'var(--space-2)', 
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        flexShrink: 0
+                      }}>
                         <input
                           type="radio"
                           name="videoSource"
@@ -642,13 +843,18 @@ const AdminPostEditor = () => {
                           onChange={(e) => {
                             setVideoSource(e.target.value);
                             setYoutubeLink('');
-                            setValue('media_url', '');
-                            setMediaPreview('');
                           }}
                         />
                         <span>Upload Video File</span>
                       </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', cursor: 'pointer' }}>
+                      <label style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 'var(--space-2)', 
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        flexShrink: 0
+                      }}>
                         <input
                           type="radio"
                           name="videoSource"
@@ -656,8 +862,7 @@ const AdminPostEditor = () => {
                           checked={videoSource === 'youtube'}
                           onChange={(e) => {
                             setVideoSource(e.target.value);
-                            setValue('media_url', '');
-                            setMediaPreview('');
+                            setYoutubeLink('');
                           }}
                         />
                         <span>YouTube Link</span>
@@ -670,80 +875,130 @@ const AdminPostEditor = () => {
                 {watchedMediaType === MEDIA_TYPE.VIDEO && videoSource === 'youtube' && (
                   <div style={{ marginBottom: 'var(--space-4)' }}>
                     <label htmlFor="youtube_link" style={{ display: 'block', marginBottom: 'var(--space-2)' }}>
-                      YouTube URL *
+                      YouTube URL
                     </label>
-                    <input
-                      type="text"
-                      id="youtube_link"
-                      value={youtubeLink}
-                      onChange={(e) => {
-                        const link = e.target.value;
-                        setYoutubeLink(link);
-                        
-                        if (link && isValidYouTubeUrl(link)) {
-                          const embedUrl = getYouTubeEmbedUrl(link);
-                          setValue('media_url', embedUrl);
-                          setMediaPreview(embedUrl);
-                          toast.success('YouTube link validated!');
-                        } else if (link) {
-                          setValue('media_url', '');
-                          setMediaPreview('');
-                        }
-                      }}
-                      placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
-                      style={{ width: '100%', padding: 'var(--space-3)' }}
-                    />
+                    <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                      <input
+                        type="text"
+                        id="youtube_link"
+                        value={youtubeLink}
+                        onChange={(e) => setYoutubeLink(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (youtubeLink && isValidYouTubeUrl(youtubeLink)) {
+                              const embedUrl = getYouTubeEmbedUrl(youtubeLink);
+                              handleAddMediaUrl(embedUrl);
+                              toast.success('YouTube link added!');
+                            } else {
+                              toast.error('Invalid YouTube URL');
+                            }
+                          }
+                        }}
+                        placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                        style={{ flex: 1, padding: 'var(--space-3)' }}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={() => {
+                          if (youtubeLink && isValidYouTubeUrl(youtubeLink)) {
+                            const embedUrl = getYouTubeEmbedUrl(youtubeLink);
+                            handleAddMediaUrl(embedUrl);
+                            setYoutubeLink('');
+                            toast.success('YouTube link added!');
+                          } else {
+                            toast.error('Invalid YouTube URL');
+                          }
+                        }}
+                      >
+                        Add
+                      </button>
+                    </div>
                     <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginTop: 'var(--space-1)' }}>
-                      Paste a YouTube video URL. Supported formats: youtube.com/watch?v=..., youtu.be/..., youtube.com/embed/...
+                      Paste a YouTube video URL and click Add or press Enter
                     </p>
-                    {youtubeLink && !isValidYouTubeUrl(youtubeLink) && (
-                      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--error)', marginTop: 'var(--space-1)' }}>
-                        ⚠️ Invalid YouTube URL. Please check the format.
-                      </p>
-                    )}
+                  </div>
+                )}
+
+                {/* URL Input (for images or videos when upload is selected) */}
+                {(watchedMediaType === MEDIA_TYPE.IMAGE || (watchedMediaType === MEDIA_TYPE.VIDEO && videoSource === 'upload')) && (
+                  <div style={{ marginBottom: 'var(--space-4)' }}>
+                    <label htmlFor="media_url_input" style={{ display: 'block', marginBottom: 'var(--space-2)' }}>
+                      Paste {watchedMediaType === MEDIA_TYPE.VIDEO ? 'Video' : 'Image'} URL
+                    </label>
+                    <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                      <input
+                        type="url"
+                        id="media_url_input"
+                        placeholder={`Enter ${watchedMediaType === MEDIA_TYPE.VIDEO ? 'video' : 'image'} URL`}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const url = e.target.value;
+                            if (url && url.trim()) {
+                              handleAddMediaUrl(url);
+                              e.target.value = '';
+                            }
+                          }
+                        }}
+                        style={{ flex: 1, padding: 'var(--space-3)' }}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={(e) => {
+                          const input = e.target.previousElementSibling;
+                          const url = input.value;
+                          if (url && url.trim()) {
+                            handleAddMediaUrl(url);
+                            input.value = '';
+                          }
+                        }}
+                      >
+                        Add
+                      </button>
+                    </div>
                   </div>
                 )}
 
                 {/* File Upload (for images or videos when upload is selected) */}
                 {(watchedMediaType === MEDIA_TYPE.IMAGE || (watchedMediaType === MEDIA_TYPE.VIDEO && videoSource === 'upload')) && (
-                  <div style={{ marginBottom: 'var(--space-2)' }}>
-                    <input 
-                      type="url" 
-                      id="media_url" 
-                      {...register('media_url')} 
-                      placeholder="Or enter media URL directly"
-                      style={{ marginBottom: 'var(--space-2)' }}
+                  <div style={{ marginBottom: 'var(--space-4)' }}>
+                    <label 
+                      htmlFor="media_upload" 
+                      className="btn btn-secondary"
+                      style={{ 
+                        cursor: uploading && uploadingType === 'media' ? 'not-allowed' : 'pointer',
+                        opacity: uploading && uploadingType === 'media' ? 0.6 : 1,
+                        display: 'inline-block'
+                      }}
+                    >
+                      {uploading && uploadingType === 'media' 
+                        ? `Uploading... ${uploadProgress}%` 
+                        : `Upload ${watchedMediaType === MEDIA_TYPE.VIDEO ? 'Video' : 'Image'}${mediaUrls.length > 0 ? 's' : ''} (Multiple)`}
+                    </label>
+                    <input
+                      type="file"
+                      id="media_upload"
+                      accept={watchedMediaType === MEDIA_TYPE.VIDEO ? 'video/mp4,video/webm,video/quicktime' : 'image/jpeg,image/jpg,image/png,image/gif,image/webp,image/heic,image/heif'}
+                      multiple
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        if (files.length > 0) {
+                          handleMultipleFileUpload(files, 'media');
+                        }
+                        e.target.value = '';
+                      }}
+                      disabled={uploading && uploadingType === 'media'}
+                      style={{ display: 'none' }}
                     />
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: 'var(--space-2)',
-                      marginBottom: 'var(--space-2)'
-                    }}>
-                      <label 
-                        htmlFor="media_upload" 
-                        className="btn btn-secondary"
-                        style={{ 
-                          cursor: uploading && uploadingType === 'media' ? 'not-allowed' : 'pointer',
-                          opacity: uploading && uploadingType === 'media' ? 0.6 : 1
-                        }}
-                      >
-                        {uploading && uploadingType === 'media' 
-                          ? `Uploading... ${uploadProgress}%` 
-                          : `Upload ${watchedMediaType === MEDIA_TYPE.VIDEO ? 'Video' : 'Image'}`}
-                      </label>
-                      <input
-                        type="file"
-                        id="media_upload"
-                        accept={watchedMediaType === MEDIA_TYPE.VIDEO ? 'video/*' : 'image/*'}
-                        onChange={(e) => {
-                          const file = e.target.files[0];
-                          if (file) handleFileUpload(file, 'media');
-                        }}
-                        disabled={uploading}
-                        style={{ display: 'none' }}
-                      />
-                    </div>
+                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginTop: 'var(--space-2)' }}>
+                      Maximum 20 files allowed. Currently: {mediaUrls.length} / 20
+                    </p>
+                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>
+                      Supported formats: JPEG, PNG, GIF, WebP, HEIC. HEIC images from Mac will be automatically converted to JPEG.
+                    </p>
                     {uploading && uploadingType === 'media' && (
                       <div style={{ 
                         width: '100%', 
@@ -764,53 +1019,126 @@ const AdminPostEditor = () => {
                   </div>
                 )}
 
-                {/* Media Preview */}
-                {mediaPreview && (
-                  <div style={{ 
-                    marginTop: 'var(--space-4)',
-                    borderRadius: 'var(--radius-md)',
-                    overflow: 'hidden',
-                    border: '1px solid var(--border-light)'
-                  }}>
-                    {watchedMediaType === MEDIA_TYPE.VIDEO ? (
-                      isValidYouTubeUrl(youtubeLink) ? (
-                        <iframe
-                          src={mediaPreview}
-                          title="YouTube video player"
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          style={{
-                            width: '100%',
-                            height: '400px',
-                            display: 'block'
-                          }}
-                        />
-                      ) : (
-                        <video 
-                          src={mediaPreview} 
-                          controls
-                          style={{ 
-                            width: '100%', 
-                            maxHeight: '400px', 
-                            display: 'block'
-                          }} 
-                        />
-                      )
-                    ) : (
-                      <img 
-                        src={mediaPreview} 
-                        alt="Media preview" 
-                        style={{ 
-                          width: '100%', 
-                          maxHeight: '400px', 
-                          objectFit: 'cover',
-                          display: 'block'
-                        }} 
-                      />
-                    )}
+                {/* Media URLs List */}
+                {mediaUrls.length > 0 && (
+                  <div style={{ marginTop: 'var(--space-4)' }}>
+                    <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '500' }}>
+                      Added Media ({mediaUrls.length}):
+                    </label>
+                    <div style={{ 
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+                      gap: 'var(--space-3)',
+                      marginBottom: 'var(--space-4)'
+                    }}>
+                      {mediaUrls.map((url, index) => {
+                        const isVideo = watchedMediaType === MEDIA_TYPE.VIDEO;
+                        const isYouTube = isValidYouTubeUrl(url) || url.includes('youtube.com/embed');
+                        return (
+                          <div key={index} style={{ 
+                            position: 'relative',
+                            borderRadius: 'var(--radius-md)',
+                            overflow: 'hidden',
+                            border: '1px solid var(--border-light)',
+                            aspectRatio: isVideo && !isYouTube ? '16/9' : '1',
+                            background: 'var(--bg-secondary)'
+                          }}>
+                            {isVideo ? (
+                              isYouTube ? (
+                                <iframe
+                                  src={url}
+                                  title={`Video ${index + 1}`}
+                                  style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    border: 'none'
+                                  }}
+                                />
+                              ) : (
+                                <video 
+                                  src={url} 
+                                  style={{ 
+                                    width: '100%', 
+                                    height: '100%', 
+                                    objectFit: 'cover',
+                                    display: 'block'
+                                  }} 
+                                />
+                              )
+                            ) : (
+                              <img 
+                                src={url} 
+                                alt={`Media ${index + 1}`}
+                                onError={(e) => {
+                                  console.error('Media image failed to load:', url);
+                                  e.target.style.display = 'none';
+                                  const errorDiv = document.createElement('div');
+                                  errorDiv.style.cssText = 'padding: var(--space-4); text-align: center; color: var(--error); position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column;';
+                                  errorDiv.innerHTML = `
+                                    <p style="font-weight: bold; margin-bottom: var(--space-2);">⚠️ Error loading image</p>
+                                    <p style="font-size: var(--text-sm);">Unsupported format</p>
+                                  `;
+                                  e.target.parentElement.appendChild(errorDiv);
+                                }}
+                                style={{ 
+                                  width: '100%', 
+                                  height: '100%', 
+                                  objectFit: 'cover',
+                                  display: 'block'
+                                }} 
+                              />
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveMediaUrl(index)}
+                              style={{
+                                position: 'absolute',
+                                top: 'var(--space-1)',
+                                right: 'var(--space-1)',
+                                background: 'rgba(0, 0, 0, 0.7)',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '50%',
+                                width: '28px',
+                                height: '28px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '18px',
+                                lineHeight: 1
+                              }}
+                              title="Remove"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
+
+                {/* Carousel Preview */}
+                {mediaUrls.length > 0 && (
+                  <div style={{ marginTop: 'var(--space-4)' }}>
+                    <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '500' }}>
+                      Carousel Preview:
+                    </label>
+                    <MediaCarousel 
+                      items={mediaUrls.map(url => ({
+                        url,
+                        type: watchedMediaType === MEDIA_TYPE.VIDEO ? 'video' : 'image',
+                        isYouTube: watchedMediaType === MEDIA_TYPE.VIDEO && (isValidYouTubeUrl(url) || url.includes('youtube.com/embed'))
+                      }))}
+                    />
+                  </div>
+                )}
+
+                <input
+                  type="hidden"
+                  {...register('media_urls')}
+                />
               </div>
             )}
             </div>

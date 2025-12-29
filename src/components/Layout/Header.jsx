@@ -26,6 +26,14 @@ const Header = () => {
     if (path === ROUTES.HOME) {
       return location.pathname === path || location.pathname === '/';
     }
+    // Special handling for Programs - should highlight for both /portfolio and /programs routes
+    if (path === ROUTES.PORTFOLIO) {
+      return location.pathname.startsWith(path) || location.pathname.startsWith('/programs');
+    }
+    // Special handling for Blog - should highlight for both /blog routes
+    if (path === ROUTES.BLOG) {
+      return location.pathname.startsWith(path);
+    }
     return location.pathname.startsWith(path);
   };
 

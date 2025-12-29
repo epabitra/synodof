@@ -23,6 +23,7 @@ export const ROUTES = {
   BLOG: '/blog',
   BLOG_DETAIL: '/blog/:slug',
   PORTFOLIO: '/portfolio',
+  PROGRAM_DETAIL: '/programs/:slug',
   CONTACT: '/contact',
   DONATE: '/donate',
   ADMIN_LOGIN: '/admin/login',

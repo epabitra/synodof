@@ -227,7 +227,7 @@ const BlogList = () => {
                     <article key={post.id} className="post-card">
                       {post.cover_image_url && (
                         <div className="post-image">
-                          <Link to={`${ROUTES.BLOG}/${post.slug}`}>
+                          <Link to={ROUTES.BLOG_DETAIL.replace(':slug', post.slug)}>
                             <img src={post.cover_image_url} alt={post.title} loading="lazy" />
                           </Link>
                         </div>
@@ -242,7 +242,7 @@ const BlogList = () => {
                           )}
                         </div>
                         <h2>
-                          <Link to={`${ROUTES.BLOG}/${post.slug}`}>{post.title}</Link>
+                          <Link to={ROUTES.BLOG_DETAIL.replace(':slug', post.slug)}>{post.title}</Link>
                         </h2>
                         {post.subtitle && (
                           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginBottom: 'var(--space-2)', fontStyle: 'italic' }}>
@@ -271,7 +271,7 @@ const BlogList = () => {
                             </span>
                           )}
                         </div>
-                        <Link to={`${ROUTES.BLOG}/${post.slug}`} className="read-more">
+                        <Link to={ROUTES.BLOG_DETAIL.replace(':slug', post.slug)} className="read-more">
                           Read More →
                         </Link>
                       </div>

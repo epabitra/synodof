@@ -1,0 +1,236 @@
+.image-carousel {
+  width: 100%;
+  margin: var(--space-8) 0;
+  position: relative;
+}
+
+/* Keep carousel within blog container */
+
+.carousel-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  min-height: 500px;
+}
+
+@media (max-width: 768px) {
+  .carousel-container {
+    min-height: 300px;
+  }
+}
+
+.carousel-slide-wrapper {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.carousel-slides {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+  will-change: transform;
+}
+
+.carousel-slide {
+  min-width: 100%;
+  width: 100%;
+  position: relative;
+  min-height: 500px;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* For image slides, use contain with reduced height */
+.carousel-slide.image-slide {
+  min-height: 400px;
+  height: 400px;
+  aspect-ratio: auto;
+}
+
+/* Reduce container height for image-only carousels */
+.image-only-carousel .carousel-container {
+  min-height: 400px;
+  height: 400px;
+}
+
+.image-only-carousel .carousel-slide-wrapper {
+  min-height: 400px;
+  height: 400px;
+}
+
+@media (min-width: 769px) {
+  .carousel-slide {
+    min-height: 600px;
+  }
+}
+
+.carousel-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: var(--bg-secondary);
+}
+
+/* Ensure image slides use full height and width */
+.carousel-slide.image-slide {
+  height: 100%;
+}
+
+.carousel-slide.image-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+.carousel-slide .video-wrapper {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-slide .video-wrapper > div {
+  width: 100% !important;
+  height: 100% !important;
+  position: relative;
+}
+
+.carousel-slide .video-wrapper iframe {
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.carousel-slide video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.carousel-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-size: 32px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.carousel-button:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-button:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.carousel-button-prev {
+  left: var(--space-4);
+}
+
+.carousel-button-next {
+  right: var(--space-4);
+}
+
+.carousel-indicators {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.carousel-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--primary-600);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+.carousel-indicator:hover {
+  background: var(--primary-400);
+  transform: scale(1.2);
+}
+
+.carousel-indicator.active {
+  background: var(--primary-600);
+  transform: scale(1.3);
+}
+
+.carousel-counter {
+  text-align: center;
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-medium);
+}
+
+/* Touch/swipe support */
+.carousel-slide-wrapper {
+  touch-action: pan-y pinch-zoom;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .carousel-button {
+    width: 40px;
+    height: 40px;
+    font-size: 28px;
+  }
+
+  .carousel-button-prev {
+    left: var(--space-2);
+  }
+
+  .carousel-button-next {
+    right: var(--space-2);
+  }
+
+  .carousel-slide {
+    min-height: 300px;
+    aspect-ratio: 4 / 3;
+  }
+}
+
+/* Keyboard navigation support */
+.carousel-button:focus-visible {
+  outline: 2px solid var(--primary-600);
+  outline-offset: 2px;
+}
+
+.carousel-indicator:focus-visible {
+  outline: 2px solid var(--primary-600);
+  outline-offset: 2px;
+}
+

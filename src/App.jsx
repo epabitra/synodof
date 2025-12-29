@@ -24,6 +24,7 @@ import About from '@/pages/About';
 import BlogList from '@/pages/BlogList';
 import BlogDetail from '@/pages/BlogDetail';
 import Portfolio from '@/pages/Portfolio';
+import ProgramDetail from '@/pages/ProgramDetail';
 import Contact from '@/pages/Contact';
 import Donate from '@/pages/Donate';
 
@@ -90,6 +91,14 @@ function App() {
                 element={
                   <MainLayout>
                     <Portfolio />
+                  </MainLayout>
+                }
+              />
+              <Route
+                path={ROUTES.PROGRAM_DETAIL}
+                element={
+                  <MainLayout>
+                    <ProgramDetail />
                   </MainLayout>
                 }
               />

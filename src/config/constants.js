@@ -20,9 +20,9 @@ export const STORAGE_KEYS = {
 export const ROUTES = {
   HOME: '/',
   ABOUT: '/about',
-  BLOG: '/blog',
-  BLOG_DETAIL: '/blog/:slug',
-  PORTFOLIO: '/portfolio',
+  BLOG: '/news',
+  BLOG_DETAIL: '/news/:slug',
+  PORTFOLIO: '/programs',
   PROGRAM_DETAIL: '/programs/:slug',
   CONTACT: '/contact',
   DONATE: '/donate',

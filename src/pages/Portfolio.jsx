@@ -93,12 +93,12 @@ const Portfolio = () => {
         <title>Programs | {ENV.SITE_NAME}</title>
         <meta name="description" content="Explore our community programs, initiatives, and projects from Berhampur Diocesan Synod. Education, healthcare, youth development, and spiritual formation programs." />
         <meta name="keywords" content="Berhampur Diocesan Synod programs, community programs, Christian NGO programs, education programs, healthcare services, youth development, Berhampur" />
-        <meta property="og:url" content={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/portfolio`} />
-        <link rel="canonical" href={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/portfolio`} />
+        <meta property="og:url" content={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/programs`} />
+        <link rel="canonical" href={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/programs`} />
       </Helmet>
       <BreadcrumbSchema items={[
         { name: 'Home', url: '/' },
-        { name: 'Programs', url: '/portfolio' }
+        { name: 'Programs', url: '/programs' }
       ]} />
 
       <div className="portfolio-page">

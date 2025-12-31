@@ -8,6 +8,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import ReactMarkdown from 'react-markdown';
 import ReactPlayer from 'react-player';
+import { toast } from 'react-toastify';
 import { publicAPI } from '@/services/api';
 import { formatDate, formatDateTime } from '@/utils/dateFormatter';
 import { sanitizeHtml } from '@/utils/sanitize';
@@ -108,7 +109,7 @@ const BlogDetail = () => {
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center' }}>
           <button className="btn btn-primary" onClick={() => navigate(APP_ROUTES.BLOG)}>
-            Back to Blog
+            Back to News & Updates
           </button>
           <button className="btn btn-outline" onClick={() => navigate(APP_ROUTES.HOME)}>
             Go Home
@@ -130,17 +131,17 @@ const BlogDetail = () => {
         <meta name="keywords" content={tags.join(', ') || 'Berhampur Diocesan Synod, news, updates, Christian NGO'} />
         {post.cover_image_url && <meta property="og:image" content={post.cover_image_url} />}
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/blog/${post.slug}`} />
+        <meta property="og:url" content={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/news/${post.slug}`} />
         {post.published_at && (
           <meta property="article:published_time" content={post.published_at} />
         )}
-        <link rel="canonical" href={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/blog/${post.slug}`} />
+        <link rel="canonical" href={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/news/${post.slug}`} />
       </Helmet>
       <ArticleSchema post={post} />
       <BreadcrumbSchema items={[
         { name: 'Home', url: '/' },
-        { name: 'News & Updates', url: '/blog' },
-        { name: post.title, url: `/blog/${post.slug}` }
+        { name: 'News & Updates', url: '/news' },
+        { name: post.title, url: `/news/${post.slug}` }
       ]} />
 
       <article className="blog-detail-page">
@@ -306,35 +307,152 @@ const BlogDetail = () => {
           )}
 
           {/* Share Section */}
-          <div style={{
-            marginTop: 'var(--space-8)',
-            padding: 'var(--space-6)',
-            background: 'var(--bg-secondary)',
-            borderRadius: 'var(--radius-lg)',
-            textAlign: 'center'
-          }}>
-            <h3 style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--text-lg)' }}>Share This Story</h3>
-            <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(window.location.href)}`} 
-                 target="_blank" 
-                 rel="noopener noreferrer"
-                 className="btn btn-outline">
-                🐦 Twitter
-              </a>
-              <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 className="btn btn-outline">
-                📘 Facebook
-              </a>
-              <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`}
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 className="btn btn-outline">
-                💼 LinkedIn
-              </a>
-            </div>
-          </div>
+          {(() => {
+            // Prepare share data - use absolute URL for better compatibility
+            const shareUrl = window.location.href;
+            const shareTitle = post.title || '';
+            const shareDescription = post.excerpt || post.subtitle || post.title || '';
+            const shareText = `${shareTitle}${shareDescription ? ` - ${shareDescription}` : ''}`;
+            
+            // Build share URLs with proper parameters
+            const shareLinks = {
+              twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
+              facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`,
+              linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+              whatsapp: `https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`,
+              telegram: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
+              email: `mailto:?subject=${encodeURIComponent(shareTitle)}&body=${encodeURIComponent(`${shareDescription}\n\nRead more: ${shareUrl}`)}`,
+              reddit: `https://reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareTitle)}`,
+              pinterest: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(shareUrl)}&description=${encodeURIComponent(shareText)}`,
+            };
+
+            // Copy to clipboard function
+            const handleCopyLink = async () => {
+              try {
+                await navigator.clipboard.writeText(shareUrl);
+                toast.success('Link copied to clipboard!');
+              } catch (err) {
+                console.error('Failed to copy:', err);
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = shareUrl;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                toast.success('Link copied to clipboard!');
+              }
+            };
+
+            return (
+              <div style={{
+                marginTop: 'var(--space-8)',
+                padding: 'var(--space-6)',
+                background: 'var(--bg-secondary)',
+                borderRadius: 'var(--radius-lg)',
+                textAlign: 'center'
+              }}>
+                <h3 style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)' }}>Share This Story</h3>
+                <p style={{ 
+                  fontSize: 'var(--text-sm)', 
+                  color: 'var(--text-secondary)', 
+                  marginBottom: 'var(--space-6)',
+                  maxWidth: '600px',
+                  margin: '0 auto var(--space-6)'
+                }}>
+                  Help spread the word by sharing this story on your favorite platforms
+                </p>
+                <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <a 
+                    href={shareLinks.twitter}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="btn btn-outline"
+                    style={{ minWidth: '120px' }}
+                    title="Share on Twitter"
+                  >
+                    🐦 Twitter
+                  </a>
+                  <a 
+                    href={shareLinks.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-outline"
+                    style={{ minWidth: '120px' }}
+                    title="Share on Facebook"
+                  >
+                    📘 Facebook
+                  </a>
+                  <a 
+                    href={shareLinks.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-outline"
+                    style={{ minWidth: '120px' }}
+                    title="Share on LinkedIn"
+                  >
+                    💼 LinkedIn
+                  </a>
+                  <a 
+                    href={shareLinks.whatsapp}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-outline"
+                    style={{ minWidth: '120px' }}
+                    title="Share on WhatsApp"
+                  >
+                    💬 WhatsApp
+                  </a>
+                  <a 
+                    href={shareLinks.telegram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-outline"
+                    style={{ minWidth: '120px' }}
+                    title="Share on Telegram"
+                  >
+                    ✈️ Telegram
+                  </a>
+                  <a 
+                    href={shareLinks.reddit}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-outline"
+                    style={{ minWidth: '120px' }}
+                    title="Share on Reddit"
+                  >
+                    🤖 Reddit
+                  </a>
+                  <a 
+                    href={shareLinks.pinterest}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-outline"
+                    style={{ minWidth: '120px' }}
+                    title="Share on Pinterest"
+                  >
+                    📌 Pinterest
+                  </a>
+                  <a 
+                    href={shareLinks.email}
+                    className="btn btn-outline"
+                    style={{ minWidth: '120px' }}
+                    title="Share via Email"
+                  >
+                    📧 Email
+                  </a>
+                  <button
+                    onClick={handleCopyLink}
+                    className="btn btn-outline"
+                    style={{ minWidth: '120px' }}
+                    title="Copy link to clipboard"
+                  >
+                    📋 Copy Link
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Navigation */}
           <div style={{ 
@@ -348,7 +466,7 @@ const BlogDetail = () => {
             gap: 'var(--space-4)'
           }}>
             <Link to={APP_ROUTES.BLOG} className="btn btn-outline">
-              ← Back to Blog
+              ← Back to News & Updates
             </Link>
             <Link to={APP_ROUTES.CONTACT} className="btn btn-primary">
               Get In Touch

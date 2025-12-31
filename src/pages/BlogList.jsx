@@ -125,12 +125,12 @@ const BlogList = () => {
         <title>News &amp; Updates | {ENV.SITE_NAME}</title>
         <meta name="description" content="Latest news, updates, and articles from Berhampur Diocesan Synod. Stay informed about our programs, events, and community initiatives." />
         <meta name="keywords" content="Berhampur Diocesan Synod news, updates, articles, Christian NGO news, Berhampur Diocese updates, community news" />
-        <meta property="og:url" content={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/blog`} />
-        <link rel="canonical" href={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/blog`} />
+        <meta property="og:url" content={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/news`} />
+        <link rel="canonical" href={`${ENV.SITE_URL || 'https://www.synodofberhampur.com'}/news`} />
       </Helmet>
       <BreadcrumbSchema items={[
         { name: 'Home', url: '/' },
-        { name: 'News & Updates', url: '/blog' }
+        { name: 'News & Updates', url: '/news' }
       ]} />
 
       <div className="blog-list-page">

@@ -388,7 +388,7 @@ a:hover {
 }
 
 .navbar {
-  padding: var(--space-4) 0;
+  padding: var(--space-3) 0;
 }
 
 .navbar-container {
@@ -402,7 +402,7 @@ a:hover {
 }
 
 .navbar-brand {
-  font-size: var(--text-xl);
+  font-size: var(--text-3xl);
   font-weight: var(--font-bold);
   background: var(--gradient-button);
   -webkit-background-clip: text;
@@ -410,9 +410,10 @@ a:hover {
   background-clip: text;
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   transition: all var(--transition-base);
   position: relative;
+  line-height: 1;
 }
 
 .navbar-brand:hover {
@@ -421,8 +422,13 @@ a:hover {
 }
 
 .navbar-brand span:first-child {
-  font-size: 1.5em;
+  font-size: 2.2em;
+  line-height: 1;
   filter: drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3));
+}
+
+.navbar-brand span:last-child {
+  line-height: 1.2;
 }
 
 .navbar-nav {

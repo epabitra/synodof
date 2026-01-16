@@ -38,8 +38,8 @@ export const validatePasswordStrength = (password) => {
     return { valid: false, message: 'Password is required' };
   }
   
-  if (password.length < 8) {
-    return { valid: false, message: 'Password must be at least 8 characters long' };
+  if (password.length < VALIDATION.PASSWORD_MIN_LENGTH) {
+    return { valid: false, message: `Password must be at least ${VALIDATION.PASSWORD_MIN_LENGTH} characters long` };
   }
   
   if (password.length > 128) {
